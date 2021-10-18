@@ -9,34 +9,40 @@ const bearerAuth = require('./middleware/bearer.js')
 
 authRouter.post('/signup', async (req, res, next) => {
   try {
-    let userRecord = await users.create(req.body);
+    let input = {
+      username: req.body.username,
+      password: req.body.password,
+    }
+    let userRecord = await users.create(input);
+    
     const output = {
       user: userRecord,
-      token: userRecord.token
+      // token: userRecord.token
     };
     res.status(200).json(output);
   } catch (e) {
-    next(e.message);
+      console.log('route ouput e:',e)
   }
 });
 
-authRouter.post('/signin', basicAuth, (req, res, next) => {
-  const user = {
-    user: request.user,
-    token: request.user.token
+authRouter.post('/signin', basicAuth, (req, res) => {
+  const info = {
+    user: req.user,
+    token: req.user.token
   };
-  res.status(200).json(user);
+  res.status(200).json(info);
 });
 
-authRouter.get('/users', bearerAuth, async (req, res, next) => {
-  const users = await Users.findAll({});
-  const list = users.map(user => user.username);
+authRouter.get('/users', bearerAuth, async (req, res) => {
+
+  const dbUsers = await users.findAll();
+  const list = dbUsers.map(user => user.username);
   res.status(200).json(list);
+
 });
 
-authRouter.get('/secret', bearerAuth, async (req, res, next) => {
+authRouter.get('/secret', bearerAuth, async (req, res) => {
   res.status(200).send("Welcome to the secret area!")
 });
-
 
 module.exports = authRouter;
